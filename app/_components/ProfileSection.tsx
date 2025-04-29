@@ -18,7 +18,7 @@ export function ProfileSection() {
                 <div className="h-36 w-36 overflow-hidden rounded-full">
                   <Image
                     src="/images/test.png"
-                    alt="짐코딩"
+                    alt="profile"
                     width={144}
                     height={144}
                     className="object-cover"

@@ -9,49 +9,26 @@ import {
 } from '@/components/ui/select';
 import { TagSection } from './_components/TagSection';
 import { ProfileSection } from './_components/ProfileSection';
+import { getPublishedPosts, getTags } from '@/lib/notion';
 
-const mockPosts = [
-  {
-    id: '1',
-    title: 'Next.js 13으로 블로그 만들기',
-    description: 'Next.js 13과 Notion API를 활용하여 개인 블로그를 만드는 방법을 알아봅니다.',
-    coverImage: 'https://picsum.photos/800/400',
-    tags: [
-      { id: '1', name: 'Next.js', count: 10 },
-      { id: '2', name: 'React', count: 20 },
-    ],
-    author: '짐코딩',
-    date: '2024-02-01',
-  },
-  {
-    id: '2',
-    title: 'TypeScript 기초 다지기',
-    description: 'TypeScript의 기본 문법과 실전에서 자주 사용되는 패턴들을 살펴봅니다.',
-    coverImage: 'https://picsum.photos/800/401',
-    tags: [
-      { id: '3', name: 'TypeScript', count: 30 },
-      { id: '4', name: 'JavaScript', count: 40 },
-    ],
-    author: '짐코딩',
-    date: '2024-01-15',
-  },
-];
-const mockTags = [
-  { id: '1', name: 'Next.js', count: 10 },
-  { id: '2', name: 'React', count: 20 },
-  { id: '3', name: 'Typescript', count: 30 },
-  { id: '4', name: 'Tailwind CSS', count: 40 },
-  { id: '5', name: 'Node.js', count: 50 },
-  { id: '6', name: 'Express', count: 60 },
-];
+interface HomeProps {
+  searchParams: Promise<{ tag?: string }>;
+}
 
-export default function Home() {
+export default async function Home({ searchParams }: HomeProps) {
+  const { tag } = await searchParams;
+  const selectedTag = tag || 'All';
+  const [posts, tags] = await Promise.all([
+    getPublishedPosts(selectedTag),
+    getTags(),
+  ]);
+
   return (
     <div className="container py-8">
       <div className="grid grid-cols-[200px_1fr_220px] gap-6">
         {/* left side */}
         <aside>
-          <TagSection tags={mockTags} />
+          <TagSection tags={tags} />
         </aside>
         <div className="space-y-8">
           {/* Section Title */}
@@ -70,9 +47,9 @@ export default function Home() {
           {/* Blog Card Grid */}
           <div className="grid gap-4">
             {/* Blog Card Loop */}
-            {[0, 1].map((i) => (
-              <Link href={`/blog/${mockPosts[i].id}`} key={i}>
-                <PostCard post={mockPosts[i]} />
+            {posts.map((post) => (
+              <Link href={`/blog/${post.slug}`} key={post.id}>
+                <PostCard post={post} />
               </Link>
             ))}
           </div>
