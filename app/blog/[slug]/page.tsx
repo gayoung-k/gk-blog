@@ -1,94 +1,30 @@
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
-import { CalendarDays, Clock, User } from 'lucide-react';
+import { CalendarDays, User } from 'lucide-react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getPostBySlug } from '@/lib/notion';
 import { formatDate } from '@/lib/date';
-interface TableOfContentsItem {
-  id: string;
-  title: string;
-  items?: TableOfContentsItem[];
+import { MDXRemote } from 'next-mdx-remote/rsc';
+import remarkGfm from 'remark-gfm';
+import rehypeSanitize from 'rehype-sanitize';
+import { rehypePrettyCode } from 'rehype-pretty-code';
+import rehypeSlug from 'rehype-slug';
+import { compile } from '@mdx-js/mdx';
+import withSlugs from 'rehype-slug';
+import withToc from '@stefanprobst/rehype-extract-toc';
+import withTocExport from '@stefanprobst/rehype-extract-toc/mdx';
+
+interface TocEntry {
+  value: string;
+  depth: number;
+  id?: string;
+  children?: Array<TocEntry>;
 }
 
-const mockTableOfContents: TableOfContentsItem[] = [
-  {
-    id: 'intro',
-    title: 'Introduction',
-    items: [],
-  },
-  {
-    id: 'getting-started',
-    title: 'Getting Started',
-    items: [
-      {
-        id: 'prerequisites',
-        title: 'Prerequisites',
-        items: [
-          {
-            id: 'node-installation',
-            title: 'Node.js Installation',
-          },
-          {
-            id: 'npm-setup',
-            title: 'NPM Setup',
-          },
-        ],
-      },
-      {
-        id: 'project-setup',
-        title: 'Project Setup',
-        items: [
-          {
-            id: 'create-project',
-            title: 'Create Project',
-          },
-          {
-            id: 'folder-structure',
-            title: 'Folder Structure',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    id: 'shadcn-ui-setup',
-    title: 'Shadcn UI Setup',
-    items: [
-      {
-        id: 'installation',
-        title: 'Installation Method',
-        items: [
-          {
-            id: 'cli-installation',
-            title: 'CLI Tool Installation',
-          },
-          {
-            id: 'component-setup',
-            title: 'Component Setup',
-          },
-        ],
-      },
-      {
-        id: 'configuration',
-        title: 'Environment Setup',
-        items: [
-          {
-            id: 'theme-setup',
-            title: 'Theme Setup',
-          },
-          {
-            id: 'typography',
-            title: 'Typography',
-          },
-        ],
-      },
-    ],
-  },
-];
 
-function TableOfContentsLink({ item }: { item: TableOfContentsItem }) {
+function TableOfContentsLink({ item }: { item: TocEntry }) {
   return (
     <div className="space-y-2">
       <Link
@@ -96,11 +32,11 @@ function TableOfContentsLink({ item }: { item: TableOfContentsItem }) {
         href={`#${item.id}`}
         className={`hover:text-foreground text-muted-foreground block font-medium transition-colors`}
       >
-        {item.title}
+        {item.value}
       </Link>
-      {item.items && item.items.length > 0 && (
+      {item.children && item.children.length > 0 && (
         <div className="space-y-2 pl-4">
-          {item.items.map((subItem) => (
+          {item.children.map((subItem) => (
             <TableOfContentsLink key={subItem.id} item={subItem} />
           ))}
         </div>
@@ -116,6 +52,10 @@ interface BlogPostProps {
 export default async function BlogPost({ params }: BlogPostProps) {
   const { slug } = await params;
   const { markdown, post } = await getPostBySlug(slug);
+
+  const { data } = await compile(markdown, {
+    rehypePlugins: [withSlugs, rehypeSanitize, withToc, withTocExport],
+  });
 
   return (
     <div className="container py-12">
@@ -151,24 +91,16 @@ export default async function BlogPost({ params }: BlogPostProps) {
           <Separator className="my-8" />
 
           {/* blog content */}
-          <div className="prose prose-slate dark:prose-invert max-w-none">
-            <p className="lead">
-              Let&apos;s learn how to build a modern and beautiful blog using Next.js and Shadcn UI.
-              This tutorial covers the entire process from basic setup to deployment.
-            </p>
-
-            <h2>Getting Started</h2>
-            <p>
-              Next.js is a full-stack React framework. It offers various rendering strategies like
-              server-side rendering, static site generation, and more, while providing many features
-              that enhance the developer experience.
-            </p>
-
-            <h2>Setting up Shadcn UI</h2>
-            <p>
-              Shadcn UI is a collection of reusable components that combines beautiful design and
-              accessibility. It allows you to own the components and customize them freely.
-            </p>
+          <div className="prose prose-slate dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] max-w-none">
+            <MDXRemote
+              source={markdown}
+              options={{
+                mdxOptions: {
+                  remarkPlugins: [remarkGfm],
+                  rehypePlugins: [rehypeSlug, rehypeSanitize, rehypePrettyCode],
+                },
+              }}
+            />
           </div>
 
           <Separator className="my-16" />
@@ -209,9 +141,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
             <div className="bg-muted/50 space-y-4 rounded-lg p-6 backdrop-blur-sm">
               <h3 className="text-lg font-semibold">Table of Contents</h3>
               <nav className="space-y-3 text-sm">
-                {mockTableOfContents.map((item) => (
-                  <TableOfContentsLink key={item.id} item={item} />
-                ))}
+                {data?.toc?.map((item) => <TableOfContentsLink key={item.id} item={item} />)}
               </nav>
             </div>
           </div>
