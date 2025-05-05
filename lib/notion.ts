@@ -6,6 +6,19 @@ import type {
 } from '@notionhq/client/build/src/api-endpoints';
 import { NotionToMarkdown } from 'notion-to-md';
 
+export interface GetPublishedPostParams {
+  tag?: string;
+  sort?: string;
+  pageSize?: number;
+  startCursor?: string;
+}
+
+export interface GetPublishedPostsResponse {
+  posts: Post[];
+  nextCursor: string | null;
+  hasMore: boolean;
+}
+
 export const notion = new Client({
   auth: process.env.NOTION_TOKEN,
 });
@@ -49,7 +62,7 @@ function getPostMetadata(page: PageObjectResponse): Post {
     date: properties.Date.type === 'date' ? (properties.Date.date?.start ?? '') : '',
     modifiedDate: page.last_edited_time,
     slug:
-      properties.Slug.type === 'rich_text'
+      properties.Slug?.type === 'rich_text'
         ? (properties.Slug.rich_text[0]?.plain_text ?? page.id)
         : page.id,
   };
@@ -77,7 +90,7 @@ export const getPostBySlug = async (slug: string): Promise<{ markdown: string; p
   });
 
   const mdBlocks = await n2m.pageToMarkdown(response.results[0].id);
-  const {parent} = n2m.toMarkdownString(mdBlocks);
+  const { parent } = n2m.toMarkdownString(mdBlocks);
 
   return {
     markdown: parent,
@@ -85,7 +98,12 @@ export const getPostBySlug = async (slug: string): Promise<{ markdown: string; p
   };
 };
 
-export const getPublishedPosts = async (tag?: string): Promise<Post[]> => {
+export const getPublishedPosts = async ({
+  tag = 'All',
+  sort = 'latest',
+  pageSize = 2,
+  startCursor,
+}: GetPublishedPostParams): Promise<GetPublishedPostsResponse> => {
   const response = await notion.databases.query({
     database_id: process.env.NOTION_DATABASE_ID!,
     filter: {
@@ -111,18 +129,25 @@ export const getPublishedPosts = async (tag?: string): Promise<Post[]> => {
     sorts: [
       {
         property: 'Date',
-        direction: 'descending',
+        direction: sort === 'latest' ? 'descending' : 'ascending',
       },
     ],
+    start_cursor: startCursor,
+    page_size: pageSize,
   });
 
-  return response.results
+  const posts = response.results
     .filter((page): page is PageObjectResponse => 'properties' in page)
     .map(getPostMetadata);
+  return {
+    posts,
+    nextCursor: response.next_cursor,
+    hasMore: response.has_more,
+  };
 };
 
 export const getTags = async (): Promise<TagFilterItem[]> => {
-  const posts = await getPublishedPosts();
+  const { posts } = await getPublishedPosts({ pageSize: 100 });
 
   const tagCount = posts.reduce(
     (acc, post) => {
