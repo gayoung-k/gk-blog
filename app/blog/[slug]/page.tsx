@@ -2,8 +2,6 @@ import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { CalendarDays, User } from 'lucide-react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { getPostBySlug } from '@/lib/notion';
 import { formatDate } from '@/lib/date';
 import { MDXRemote } from 'next-mdx-remote/rsc';
@@ -15,6 +13,7 @@ import { compile } from '@mdx-js/mdx';
 import withSlugs from 'rehype-slug';
 import withToc from '@stefanprobst/rehype-extract-toc';
 import withTocExport from '@stefanprobst/rehype-extract-toc/mdx';
+import GiscusComments from '@/components/GiscusComments';
 
 interface TocEntry {
   value: string;
@@ -105,36 +104,8 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
           <Separator className="my-16" />
 
-          {/* previous/next post navigation */}
-          <nav className="grid grid-cols-2 gap-8">
-            <Link href="/blog/previous-post">
-              <Card className="group hover:bg-muted/50 transition-colors">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-base font-medium">
-                    <ChevronLeft className="h-4 w-4" />
-                    <span>Getting Started</span>
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    Learn how to start with Next.js, including project structure and basic setup.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-
-            <Link href="/blog/next-post" className="text-right">
-              <Card className="group hover:bg-muted/50 transition-colors">
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-end gap-2 text-base font-medium">
-                    <span>Advanced Guide</span>
-                    <ChevronRight className="h-4 w-4" />
-                  </CardTitle>
-                  <CardDescription className="line-clamp-2">
-                    Learn how to use advanced features of Next.js to create better web applications.
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </Link>
-          </nav>
+          {/* comments */}
+          <GiscusComments />
         </section>
         <aside className="relative">
           <div className="sticky top-[var(--sticky-top)]">
