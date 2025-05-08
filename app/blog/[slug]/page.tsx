@@ -22,7 +22,6 @@ interface TocEntry {
   children?: Array<TocEntry>;
 }
 
-
 function TableOfContentsLink({ item }: { item: TocEntry }) {
   return (
     <div className="space-y-2">
@@ -57,9 +56,9 @@ export default async function BlogPost({ params }: BlogPostProps) {
   });
 
   return (
-    <div className="container py-12">
-      <div className="grid grid-cols-[240px_1fr_240px] gap-8">
-        <aside>{/* add content later */}</aside>
+    <div className="container py-6 md:py-8 lg:py-12">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-[240px_1fr_240px] md:gap-8">
+        <aside className="hidden md:block">{/* add content later */}</aside>
         <section>
           {/* blog header */}
           <div className="space-y-4">
@@ -67,7 +66,7 @@ export default async function BlogPost({ params }: BlogPostProps) {
               <div className="flex gap-2">
                 {post.tags?.map((tag) => <Badge key={tag}>{tag}</Badge>)}
               </div>
-              <h1 className="text-4xl font-bold">{post.title}</h1>
+              <h1 className="text-3xl font-bold md:text-4xl">{post.title}</h1>
             </div>
 
             {/* meta information */}
@@ -80,14 +79,20 @@ export default async function BlogPost({ params }: BlogPostProps) {
                 <CalendarDays className="h-4 w-4" />
                 <span>{formatDate(post.date)}</span>
               </div>
-              {/* <div className="flex items-center gap-1">
-                <Clock className="h-4 w-4" />
-                <span>{post.readingTime}</span>
-              </div> */}
             </div>
           </div>
 
           <Separator className="my-8" />
+
+          {/* table of contents for mobile */}
+          <div className="sticky top-[var(--sticky-top)] mb-6 md:hidden">
+            <details className="bg-muted/60 rounded-lg p-4 backdrop-blur-sm">
+              <summary className="cursor-pointer text-lg font-semibold">Table of Contents</summary>
+              <nav className="mt-3 space-y-3 text-sm">
+                {data?.toc?.map((item) => <TableOfContentsLink key={item.id} item={item} />)}
+              </nav>
+            </details>
+          </div>
 
           {/* blog content */}
           <div className="prose prose-slate dark:prose-invert prose-headings:scroll-mt-[var(--header-height)] max-w-none">
@@ -107,7 +112,9 @@ export default async function BlogPost({ params }: BlogPostProps) {
           {/* comments */}
           <GiscusComments />
         </section>
-        <aside className="relative">
+
+        {/* table of contents for desktop */}
+        <aside className="relative hidden md:block">
           <div className="sticky top-[var(--sticky-top)]">
             <div className="bg-muted/50 space-y-4 rounded-lg p-6 backdrop-blur-sm">
               <h3 className="text-lg font-semibold">Table of Contents</h3>

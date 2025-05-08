@@ -19,19 +19,19 @@ export default async function Blog({ searchParams }: BlogProps) {
 
   return (
     <div className="container py-8">
-      <div className="grid grid-cols-[200px_1fr_220px] gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-[200px_1fr_220px]">
         {/* left side */}
-        <aside>
+        <aside className="order-2 md:order-none">
           <TagSection tags={tags} />
         </aside>
-        <div className="space-y-8">
+        <div className="order-3 space-y-8 md:order-none">
           {/* Section Title */}
           <HeaderSection selectedTag={selectedTag} />
           {/* Blog Card Grid */}
           <PostList postsPromise={postsPromise} />
         </div>
         {/* right side */}
-        <aside>
+        <aside className="order-1 md:order-none">
           <ProfileSection />
         </aside>
       </div>
