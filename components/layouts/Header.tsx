@@ -1,5 +1,5 @@
 import Link from 'next/link';
-
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 export default function Header() {
   return (
     <header className="bg-background sticky top-0 z-50 border-b">
@@ -18,6 +18,9 @@ export default function Header() {
             About
           </Link>
         </nav>
+        <div className="ml-auto">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );
