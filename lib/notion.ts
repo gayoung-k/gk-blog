@@ -5,6 +5,7 @@ import type {
   PersonUserObjectResponse,
 } from '@notionhq/client/build/src/api-endpoints';
 import { NotionToMarkdown } from 'notion-to-md';
+import { unstable_cache } from 'next/cache';
 
 export interface GetPublishedPostParams {
   tag?: string;
@@ -68,90 +69,102 @@ function getPostMetadata(page: PageObjectResponse): Post {
   };
 }
 
-export const getPostBySlug = async (slug: string): Promise<{ markdown: string; post: Post | null }> => {
-  const response = await notion.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID!,
-    filter: {
-      and: [
-        {
-          property: 'Slug',
-          rich_text: {
-            equals: slug,
+export const getPostBySlug = unstable_cache(
+  async (slug: string): Promise<{ markdown: string; post: Post | null }> => {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_DATABASE_ID!,
+      filter: {
+        and: [
+          {
+            property: 'Slug',
+            rich_text: {
+              equals: slug,
+            },
           },
-        },
-        {
-          property: 'Status',
-          select: {
-            equals: 'Published',
+          {
+            property: 'Status',
+            select: {
+              equals: 'Published',
+            },
           },
-        },
-      ],
-    },
-  });
-
-  if (!response.results[0]) {
-    return {
-      markdown: '',
-      post: null,
-    };
-  }
-
-  const mdBlocks = await n2m.pageToMarkdown(response.results[0].id);
-  const { parent } = n2m.toMarkdownString(mdBlocks);
-
-  return {
-    markdown: parent,
-    post: getPostMetadata(response.results[0] as PageObjectResponse),
-  };
-};
-
-export const getPublishedPosts = async ({
-  tag = 'All',
-  sort = 'latest',
-  pageSize = 2,
-  startCursor,
-}: GetPublishedPostParams): Promise<GetPublishedPostsResponse> => {
-  const response = await notion.databases.query({
-    database_id: process.env.NOTION_DATABASE_ID!,
-    filter: {
-      and: [
-        {
-          property: 'Status',
-          select: {
-            equals: 'Published',
-          },
-        },
-        ...(tag && tag !== 'All'
-          ? [
-              {
-                property: 'Tags',
-                multi_select: {
-                  contains: tag,
-                },
-              },
-            ]
-          : []),
-      ],
-    },
-    sorts: [
-      {
-        property: 'Date',
-        direction: sort === 'latest' ? 'descending' : 'ascending',
+        ],
       },
-    ],
-    start_cursor: startCursor,
-    page_size: pageSize,
-  });
+    });
 
-  const posts = response.results
-    .filter((page): page is PageObjectResponse => 'properties' in page)
-    .map(getPostMetadata);
-  return {
-    posts,
-    nextCursor: response.next_cursor,
-    hasMore: response.has_more,
-  };
-};
+    if (!response.results[0]) {
+      return {
+        markdown: '',
+        post: null,
+      };
+    }
+
+    const mdBlocks = await n2m.pageToMarkdown(response.results[0].id);
+    const { parent } = n2m.toMarkdownString(mdBlocks);
+
+    return {
+      markdown: parent,
+      post: getPostMetadata(response.results[0] as PageObjectResponse),
+    };
+  },
+  ['posts'],
+  {
+    revalidate: 60 * 60 * 24,
+  }
+);
+
+export const getPublishedPosts = unstable_cache(
+  async ({
+    tag = 'All',
+    sort = 'latest',
+    pageSize = 2,
+    startCursor,
+  }: GetPublishedPostParams): Promise<GetPublishedPostsResponse> => {
+    const response = await notion.databases.query({
+      database_id: process.env.NOTION_DATABASE_ID!,
+      filter: {
+        and: [
+          {
+            property: 'Status',
+            select: {
+              equals: 'Published',
+            },
+          },
+          ...(tag && tag !== 'All'
+            ? [
+                {
+                  property: 'Tags',
+                  multi_select: {
+                    contains: tag,
+                  },
+                },
+              ]
+            : []),
+        ],
+      },
+      sorts: [
+        {
+          property: 'Date',
+          direction: sort === 'latest' ? 'descending' : 'ascending',
+        },
+      ],
+      start_cursor: startCursor,
+      page_size: pageSize,
+    });
+
+    const posts = response.results
+      .filter((page): page is PageObjectResponse => 'properties' in page)
+      .map(getPostMetadata);
+    return {
+      posts,
+      nextCursor: response.next_cursor,
+      hasMore: response.has_more,
+    };
+  },
+  ['posts'],
+  {
+    revalidate: 60 * 60 * 24,
+  }
+);
 
 export const getTags = async (): Promise<TagFilterItem[]> => {
   const { posts } = await getPublishedPosts({ pageSize: 100 });

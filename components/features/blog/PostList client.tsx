@@ -18,7 +18,6 @@ export default function PostList({ postsPromise }: PostListProps) {
   const searchParams = useSearchParams();
   const tag = searchParams.get('tag');
   const sort = searchParams.get('sort');
-  console.log('initialData: ', initialData);
   const fetchPosts = async ({ pageParam }: { pageParam: string | undefined }) => {
     const params = new URLSearchParams();
     if (tag) params.set('tag', tag);
