@@ -29,7 +29,7 @@ export function ProfileSection() {
 
             <div className="text-center">
               <h3 className="text-lg font-bold">Gayoung Kim</h3>
-              <p className="text-primary text-sm">Full Stack Developer</p>
+              <p className="text-primary text-sm">Software Developer</p>
             </div>
 
             <div className="flex justify-center gap-2">

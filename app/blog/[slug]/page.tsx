@@ -16,6 +16,7 @@ import withTocExport from '@stefanprobst/rehype-extract-toc/mdx';
 import GiscusComments from '@/components/GiscusComments';
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
+import { ScrollToTop } from '@/components/features/blog/ScrollToTop';
 
 export async function generateMetadata({
   params,
@@ -59,7 +60,6 @@ interface TocEntry {
   id?: string;
   children?: Array<TocEntry>;
 }
-
 
 export const generateStaticParams = async () => {
   const { posts } = await getPublishedPosts({
@@ -163,6 +163,9 @@ export default async function BlogPost({ params }: BlogPostProps) {
 
           {/* comments */}
           <GiscusComments />
+
+          {/* scroll to top button */}
+          <ScrollToTop />
         </section>
 
         {/* table of contents for desktop */}

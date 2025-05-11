@@ -108,7 +108,7 @@ export const getPostBySlug = unstable_cache(
   },
   ['posts'],
   {
-    revalidate: 60 * 60 * 24,
+    revalidate: 60,
   }
 );
 
@@ -162,7 +162,7 @@ export const getPublishedPosts = unstable_cache(
   },
   ['posts'],
   {
-    revalidate: 60 * 60 * 24,
+    revalidate: 60,
   }
 );
 
