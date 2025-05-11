@@ -1,7 +1,16 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
+import { Metadata } from 'next';
 
+export const metadata: Metadata = {
+  title: 'Page not found',
+  description: 'The requested page may not exist or has been moved.',
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 export default function NotFound() {
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center gap-6 p-6 md:p-10">

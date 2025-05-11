@@ -5,8 +5,17 @@
 // import PostList from '@/components/features/blog/PostList client';
 // interface HomeProps {
 //   searchParams: Promise<{ tag?: string; sort?: string }>;
-// }
 
+import { Metadata } from 'next';
+
+// }
+export const metadata: Metadata = {
+  title: 'Home',
+  description: 'It is a blog for sharing my thoughts and experiences.',
+  alternates: {
+    canonical: '/',
+  },
+};
 export default async function Home() {
   // const { tag, sort } = await searchParams;
   // const selectedTag = tag || 'All';
@@ -15,9 +24,5 @@ export default async function Home() {
   // const tags = await getTags();
   // const postsPromise = getPublishedPosts({ tag: selectedTag, sort: selectedSort });
 
-  return (
-    <div>
-      Home
-    </div>
-  );
+  return <div>Home</div>;
 }
