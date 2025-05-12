@@ -7,6 +7,7 @@
 //   searchParams: Promise<{ tag?: string; sort?: string }>;
 
 import { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 
 // }
 export const metadata: Metadata = {
@@ -16,13 +17,6 @@ export const metadata: Metadata = {
     canonical: '/',
   },
 };
-export default async function Home() {
-  // const { tag, sort } = await searchParams;
-  // const selectedTag = tag || 'All';
-  // const selectedSort = sort || 'latest';
-
-  // const tags = await getTags();
-  // const postsPromise = getPublishedPosts({ tag: selectedTag, sort: selectedSort });
-
-  return <div>Home</div>;
+export default function Home() {
+  redirect('/blog');
 }

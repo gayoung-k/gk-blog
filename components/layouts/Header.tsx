@@ -8,9 +8,6 @@ export default function Header() {
           <span className="font-bold">GK-BLOG</span>
         </Link>
         <nav className="ml-auto flex items-center gap-4">
-          <Link href="/" className="hover:text-primary font-medium">
-            Home
-          </Link>
           <Link href="/blog" className="hover:text-primary font-medium">
             Blog
           </Link>
