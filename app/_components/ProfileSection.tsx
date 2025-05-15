@@ -17,7 +17,7 @@ export function ProfileSection() {
               <div className="bg-muted rounded-full p-2">
                 <div className="h-36 w-36 overflow-hidden rounded-full">
                   <Image
-                    src="/images/test.png"
+                    src="/images/profile.png"
                     alt="profile"
                     width={144}
                     height={144}
